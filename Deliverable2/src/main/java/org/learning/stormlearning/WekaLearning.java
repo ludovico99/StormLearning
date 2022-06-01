@@ -23,16 +23,24 @@ public class WekaLearning {
         DataSource source1 = new DataSource(".\\Deliverable2\\src\\main\\resources\\StormClassBugginessTraining.arff");
         DataSource source2 = new DataSource(".\\Deliverable2\\src\\main\\resources\\StormClassBugginessTesting.arff");
 
-        Validation walkForwardWithBalancingAndFeatureSelection = new FeatureSelectionDecorator(new BalancingDecorator(new WalkForwardStd(source1,source2),BalancingEnum.SMOTE_SAMPLING));
+        Validation walkForwardStd = new WalkForwardStd(source1,source2);
 
-        List<LearningModelEntity> res = new ArrayList<>(walkForwardWithBalancingAndFeatureSelection.validation());
+        List<LearningModelEntity> res = new ArrayList<>(walkForwardStd.validation());
 
         CsvOutput.addLines(res,source1.getDataSet().size());
         CsvOutput.getWriter().close();
 
-        BoxChart chart  = walkForwardWithBalancingAndFeatureSelection.showChart(res,MetricsEnum.ACCURACY);
+        Validation walkForwardWithBalancing = new BalancingDecorator(new WalkForwardStd(source1,source2), BalancingEnum.SMOTE_SAMPLING);
 
-        walkForwardWithBalancingAndFeatureSelection.saveChart(chart,"Smote and Feature selection");
+        res.addAll(walkForwardWithBalancing.validation());
+
+        Validation walkForwardWithBalancingAndFeatureSelection = new FeatureSelectionDecorator(new BalancingDecorator(new WalkForwardStd(source1,source2),BalancingEnum.SMOTE_SAMPLING));
+
+        res.addAll(walkForwardWithBalancingAndFeatureSelection.validation());
+
+        BoxChart chart = walkForwardWithBalancingAndFeatureSelection.showChart(res, MetricsEnum.ACCURACY);
+
+        walkForwardWithBalancingAndFeatureSelection.saveChart(chart,"Accuracy_All");
 
 
 
