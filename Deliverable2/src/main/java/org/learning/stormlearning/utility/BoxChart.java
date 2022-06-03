@@ -3,6 +3,7 @@ package org.learning.stormlearning.utility;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.statistics.BoxAndWhiskerCalculator;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
@@ -31,6 +32,11 @@ public  class BoxChart extends ApplicationFrame {
 
         chart = boxChart;
 
+        CategoryPlot plot =  boxChart.getCategoryPlot();
+        plot.getDomainAxis().setMaximumCategoryLabelLines(5);
+
+        plot.setRangeGridlinesVisible(true);
+
         ChartPanel chartPanel = new ChartPanel( boxChart );
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         chartPanel.setPreferredSize(new java.awt.Dimension(dim.width, dim.height));
@@ -39,28 +45,28 @@ public  class BoxChart extends ApplicationFrame {
 
     public  DefaultBoxAndWhiskerCategoryDataset createDataset(List<LearningModelEntity> learningModelEntityList, MetricsEnum metricsEnum){
 
-        final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
+            final DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
 
-        int iterations = learningModelEntityList.get(0).getIterations();
-        for (LearningModelEntity learningModelEntity : learningModelEntityList) {
-            List<Double> values = new ArrayList<>();
-            String classifier = learningModelEntity.getClassifier();
-            for (int i = 0; i < iterations; i++) {
-                if (metricsEnum.equals(MetricsEnum.ACCURACY)) values.add(learningModelEntity.getAccuracy().get(i));
-                else if (metricsEnum.equals(MetricsEnum.RECALL)) values.add(learningModelEntity.getRecall().get(i));
-                else if (metricsEnum.equals(MetricsEnum.PRECISION))
-                    values.add(learningModelEntity.getPrecision().get(i));
-                else if (metricsEnum.equals(MetricsEnum.KAPPA)) values.add(learningModelEntity.getKappa().get(i));
-                else values.add(learningModelEntity.getRocAuc().get(i));
-            }
+            int iterations = learningModelEntityList.get(0).getIterations();
+            for (LearningModelEntity learningModelEntity : learningModelEntityList) {
+                List<Double> values = new ArrayList<>();
+                String classifier = learningModelEntity.getClassifier();
+                for (int i = 0; i < iterations; i++) {
+                    if (metricsEnum.equals(MetricsEnum.ACCURACY)) values.add(learningModelEntity.getAccuracy().get(i));
+                    else if (metricsEnum.equals(MetricsEnum.RECALL)) values.add(learningModelEntity.getRecall().get(i));
+                    else if (metricsEnum.equals(MetricsEnum.PRECISION)) values.add(learningModelEntity.getPrecision().get(i));
+                    else if (metricsEnum.equals(MetricsEnum.KAPPA)) values.add(learningModelEntity.getKappa().get(i));
+                    else values.add(learningModelEntity.getRocAuc().get(i));
+                }
 
-            BoxAndWhiskerItem item = BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(values);
-            String columnKey = "Walk Forward " + learningModelEntity.getBalancing();
-            if (learningModelEntity.isFeatureSelection()) columnKey = columnKey + " fs";
-            dataset.add(item, classifier,columnKey);
+                BoxAndWhiskerItem item = BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(values);
+                String columnKey = "Walk Forward " + learningModelEntity.getBalancing();
+                if (learningModelEntity.isFeatureSelection()) columnKey += " with feature selection";
+                if(learningModelEntity.isCostSensitive()) columnKey +=  " with cost sensitive";
+                dataset.add(item, classifier,columnKey);
         }
-        return dataset;
-    }
+            return dataset;
+        }
 
     public JFreeChart getChart() {
         return chart;

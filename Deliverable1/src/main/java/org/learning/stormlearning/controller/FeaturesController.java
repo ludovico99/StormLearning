@@ -1,5 +1,6 @@
 package org.learning.stormlearning.controller;
 
+
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
@@ -14,18 +15,24 @@ import org.learning.stormlearning.entity.JiraTicketsEntity;
 import org.learning.stormlearning.entity.ReleaseEntity;
 import org.learning.stormlearning.utilityclasses.Utilities;
 
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FeaturesController {
 
     private static final String DATEFORMAT = "yyyy-MM-dd";
 
+    private final Logger logger = Logger.getLogger("Features controller log");
 
-    private void  releaseInitialization (ReleaseEntity commitVersion, ReleaseEntity prevVersion, Date dateRelease) {
+
+    private void  releaseInitialization (
+            ReleaseEntity commitVersion, ReleaseEntity prevVersion, Date dateRelease) {
         /* <-- copia delle classi nella versione successiva, a partire dallo stato della versione precedente
          * All'inizio della release successiva ci sono tutte le classi della release precedente.
          *
@@ -40,13 +47,13 @@ public class FeaturesController {
                     double newAge = k.getAge() + ((dateRelease.getTime() -
                             prevReleaseTime) / (double) 604800000);
                     //<-- Assumo che sia presente anche per tutta la release successiva, se non è cosi viene eliminta
-                    //da una DELETE scaturita da un commit
+                    //da una DELETE nella release
                     newClass = new JavaFileEntity(k.getClassName(), commitVersion.getVersion(), k.getSize(),
                             newAge, k.getAuthors());
                     commitVersion.addJavaFile(newClass);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE,"Error in parsing dates" ,e);
             }
         }
     }
@@ -184,7 +191,7 @@ public class FeaturesController {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"Error in retrieving file header" ,e);
             GitController.getGit().close();
         }
     }

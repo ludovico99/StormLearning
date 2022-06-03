@@ -1,5 +1,6 @@
 package org.learning.stormlearning.controller;
 
+
 import org.learning.stormlearning.entity.LearningModelEntity;
 import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GreedyStepwise;
@@ -9,18 +10,24 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class FeatureSelectionDecorator extends Decorator {
 
-    public FeatureSelectionDecorator(Validation validation) {
-        super(validation.dataSetName + " with feature selection", validation);
+    private final Logger logger = Logger.getLogger("Feature selection log");
+
+    public FeatureSelectionDecorator(Validation val) {
+        super(val.validationEntity.getDataSetName() + " with feature selection", val);
     }
 
 
     @Override
-    public Evaluation buildModel(AbstractClassifier classifier, Instances training,Instances testing,LearningModelEntity modelEntity) {
+    public Evaluation buildModel(AbstractClassifier classifier, Instances training, Instances testing, LearningModelEntity modelEntity) {
         try {
             modelEntity.setFeatureSelection(true);
+
 
             AttributeSelection filter = new AttributeSelection();
             //create evaluator and search algorithm objects
@@ -46,11 +53,11 @@ public class FeatureSelectionDecorator extends Decorator {
             testingFiltered.setClassIndex(numAttrFiltered - 1);
 
             Evaluation eval = this.getValidation().buildModel(classifier, trainingFiltered, testingFiltered, modelEntity);
-            eval.evaluateModel(classifier, testingFiltered);
+            if(eval != null) eval.evaluateModel(classifier, testingFiltered);
 
             return eval;
         }catch (Exception e){
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"Error in feature selection evaluation",e);
         }
         return null;
     }

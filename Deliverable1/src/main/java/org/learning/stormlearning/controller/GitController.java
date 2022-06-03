@@ -21,6 +21,8 @@ public class GitController {
     private static Git git;
     private static Repository repo;
 
+    private static final Logger logger = Logger.getLogger("Git controller log");
+
 
     private static final String REPOSITORY = "https://github.com/apache/storm.git";
     private static final String PROJECT_NAME = "Storm";
@@ -42,11 +44,11 @@ public class GitController {
                         .call();
 
         } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE,"Error in cloning the repository" ,e);
                 try {
                     git = Git.open(new File(LOCAL_GIT_REPO_PREFIX + PROJECT_NAME));
                 } catch (Exception ev) {
-                    ev.printStackTrace();
+                    logger.log(Level.SEVERE,"Error in opening local repo" ,e);
                     if (git != null) git.close();
                 }
             }
@@ -64,7 +66,7 @@ public class GitController {
                 results.add(0, commit);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"Error in retrieving commits" ,e);
             return Collections.emptyList();
         }
         return results;
@@ -106,7 +108,7 @@ public class GitController {
             formatter.setRepository(repo);
             formatter.format(oldTreeIterator, newTreeIterator);
         } catch (Exception e){
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"Error in DiffFormatter method");
         }
         Logger.getAnonymousLogger().log(Level.INFO,"LogCommit: {}", newCommit);
         String logMessage = newCommit.getFullMessage();
@@ -132,7 +134,7 @@ public class GitController {
             formatter.setDiffComparator(RawTextComparator.DEFAULT);
             diffs = formatter.scan(oldTreeIterator,newTreeIterator);
         } catch (Exception e){
-            e.printStackTrace();
+            logger.log(Level.SEVERE,"Error in diff scanning" ,e);
         }
         return diffs;
     }

@@ -2,8 +2,12 @@ package org.learning.stormlearning;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONException;
+
 import org.learning.stormlearning.controller.*;
-import org.learning.stormlearning.entity.*;
+import org.learning.stormlearning.entity.CommitEntity;
+import org.learning.stormlearning.entity.DataSetEntity;
+import org.learning.stormlearning.entity.JiraTicketsEntity;
+import org.learning.stormlearning.entity.ReleaseEntity;
 
 import java.io.*;
 import java.text.ParseException;
@@ -17,7 +21,7 @@ public class Main {
     public static void main(String[] args) throws IOException, JSONException, ParseException {
         int nRows =0;
         Object[] aux;
-        //Il main funge da controller applicativo, da orchestratore. Ha la responsabilità di eseguire nel corretto ordine i tasks.
+        //Il main funge da org.learning.stormlearning.controller applicativo, da orchestratore. Ha la responsabilità di eseguire nel corretto ordine i tasks.
 
 
         /* FASE 1: Retrieve dei commit attravero jgit:
