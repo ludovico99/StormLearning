@@ -23,6 +23,7 @@ public class WalkForwardStd extends Validation {
     public Evaluation buildModel(AbstractClassifier classifier , Instances training, Instances testing, LearningModelEntity modelEntity) {
         try {
             classifier.buildClassifier(training);
+
             Evaluation eval = new Evaluation(testing);
 
             eval.evaluateModel(classifier, testing);

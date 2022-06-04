@@ -2,8 +2,8 @@ package org.learning.stormlearning.controller;
 
 
 import org.learning.stormlearning.entity.LearningModelEntity;
-import weka.attributeSelection.CfsSubsetEval;
-import weka.attributeSelection.GreedyStepwise;
+import org.learning.stormlearning.utility.FeatureSelectionEnum;
+import weka.attributeSelection.*;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
@@ -17,30 +17,109 @@ import java.util.logging.Logger;
 public class FeatureSelectionDecorator extends Decorator {
 
     private final Logger logger = Logger.getLogger("Feature selection log");
+    private final FeatureSelectionEnum value;
 
-    public FeatureSelectionDecorator(Validation val) {
+    public FeatureSelectionDecorator(Validation val, FeatureSelectionEnum value) {
         super(val.validationEntity.getDataSetName() + " with feature selection", val);
+        this.value = value;
+    }
+
+
+    private void initBackwardsSearch(AttributeSelection filter){
+        CfsSubsetEval subsetEval = new CfsSubsetEval();
+        GreedyStepwise search = new GreedyStepwise();
+
+        //set the algorithm to search backward
+        search.setSearchBackwards(true);
+
+        //set the filter to use the evaluator and search algorithm
+        filter.setEvaluator(subsetEval);
+
+        filter.setSearch(search);
+        //specify the dataset
+
+    }
+
+    private void initForwardsSearch(AttributeSelection filter){
+        CfsSubsetEval subsetEval = new CfsSubsetEval();
+
+        GreedyStepwise search = new GreedyStepwise();
+
+        filter.setEvaluator(subsetEval);
+
+        filter.setSearch(search);
+
+    }
+
+    private void initWrapperForwardsSearch(AbstractClassifier classifier, AttributeSelection filter){
+        ClassifierSubsetEval subsetEval = new ClassifierSubsetEval();
+
+        subsetEval.setClassifier(classifier); //<-- WRAPPER
+
+        GreedyStepwise search = new GreedyStepwise();
+
+        filter.setEvaluator(subsetEval);
+
+        filter.setSearch(search);
+
+    }
+
+
+    private void initBestFirst (AttributeSelection filter){
+        CfsSubsetEval subsetEval = new CfsSubsetEval();
+
+        BestFirst search= new BestFirst();
+
+        filter.setEvaluator(subsetEval);
+
+        filter.setSearch(search);
+
+    }
+
+    private void initCorrEvaluator (AttributeSelection filter){
+        CorrelationAttributeEval correlationAttributeEval = new CorrelationAttributeEval();
+
+        Ranker search= new Ranker();
+
+        //set the filter to use the evaluator and search algorithm
+        filter.setEvaluator(correlationAttributeEval);
+
+        filter.setSearch(search);
     }
 
 
     @Override
-    public Evaluation buildModel(AbstractClassifier classifier, Instances training, Instances testing, LearningModelEntity modelEntity) {
+    public Evaluation buildModel(AbstractClassifier classifier, Instances training,Instances testing,LearningModelEntity modelEntity) {
         try {
             modelEntity.setFeatureSelection(true);
 
-
             AttributeSelection filter = new AttributeSelection();
             //create evaluator and search algorithm objects
-            CfsSubsetEval subsetEval = new CfsSubsetEval();
-            GreedyStepwise search = new GreedyStepwise();
 
-            //set the algorithm to search backward
-            search.setSearchBackwards(true);
-            //set the filter to use the evaluator and search algorithm
-            filter.setEvaluator(subsetEval);
 
-            filter.setSearch(search);
-            //specify the dataset
+            if (value.equals(FeatureSelectionEnum.FILTER_BACKWARDS_SEARCH)) {
+                initBackwardsSearch(filter);
+                modelEntity.setTypeFeatureSelection("Backwards search");
+            } else if (value.equals(FeatureSelectionEnum.WRAPPER_FORWARDS_SEARCH)) {
+
+                initWrapperForwardsSearch(classifier, filter);
+                modelEntity.setTypeFeatureSelection("WRAPPER Forwards search");
+
+            }else if (value.equals(FeatureSelectionEnum.FILTER_FORWARDS_SEARCH)){
+
+                initForwardsSearch(filter);
+                modelEntity.setTypeFeatureSelection("Forwards search");
+
+            }else if (value.equals(FeatureSelectionEnum.BEST_FIRST)) {
+
+                initBestFirst(filter);
+                modelEntity.setTypeFeatureSelection("Best first");
+
+            } else{
+                initCorrEvaluator(filter);
+                modelEntity.setTypeFeatureSelection("Ranker");
+            }
+
 
             filter.setInputFormat(training);
 
