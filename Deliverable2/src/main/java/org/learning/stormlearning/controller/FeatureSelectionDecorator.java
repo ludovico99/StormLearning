@@ -87,6 +87,20 @@ public class FeatureSelectionDecorator extends Decorator {
         filter.setSearch(search);
     }
 
+    private void initWrapperBackwardsSearch(AbstractClassifier classifier, AttributeSelection filter){
+        ClassifierSubsetEval subsetEval = new ClassifierSubsetEval();
+
+        subsetEval.setClassifier(classifier); //<-- WRAPPER
+
+        GreedyStepwise search = new GreedyStepwise();
+        search.setSearchBackwards(true);
+
+        filter.setEvaluator(subsetEval);
+
+        filter.setSearch(search);
+
+    }
+
 
     @Override
     public Evaluation buildModel(AbstractClassifier classifier, Instances training,Instances testing,LearningModelEntity modelEntity) {
@@ -114,6 +128,10 @@ public class FeatureSelectionDecorator extends Decorator {
 
                 initBestFirst(filter);
                 modelEntity.setTypeFeatureSelection("Best first");
+
+            } else if(value.equals(FeatureSelectionEnum.WRAPPER_BACKWARDS_SEARCH)){
+                initWrapperBackwardsSearch(classifier,filter);
+                modelEntity.setTypeFeatureSelection("WRAPPER Backwards search");
 
             } else{
                 initCorrEvaluator(filter);
